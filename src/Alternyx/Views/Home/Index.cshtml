@@ -1,0 +1,86 @@
+﻿@model IEnumerable<Alternyx.Models.Idea>
+
+<div class="row">
+    <div class="col-md-6">
+        <h2>Популярные идеи</h2>
+        @if (User.Identity.IsAuthenticated)
+        {
+            <a href="/ideas/create" class="btn btn-default btn-sm"><span class="glyphicon glyphicon-plus"></span> Добавить новую идею...</a>
+        }
+        <br />
+        <br />
+        @if (!User.Identity.IsAuthenticated)
+        {
+            <div class="alert alert-warning">
+                Только авторизированые пользователи могут создавать и поддерживать идеи.
+                <a asp-controller="Account" asp-action="Login">Войти</a>
+            </div>
+        }
+
+        <ul class="list-group">
+            @foreach (var idea in Model)
+            {
+                <li class="list-group-item">
+                    <div class="badge">
+                        <input type="hidden" id="ideaId" name="ideaId" value="@idea.Id" />
+                        <div id="ideaValue">@idea.Value</div>
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            var votes = new List<int>();
+                            if (ViewBag.Votes != null)
+                            {
+                                votes = (List<int>) ViewBag.Votes;
+                            }
+
+                            <a id="voteUp" class="btn btn-xs btn-success" title="поддержать" @((votes.Contains(idea.Id)) ? "disabled='true'" : "")>
+                                <span class="glyphicon glyphicon-thumbs-up"></span>
+                            </a>
+                        }
+                        @*<a href="#" class="btn btn-xs btn-danger"><span class="glyphicon glyphicon-thumbs-down"></span></a>*@
+                    </div>
+                    <b>@idea.Name</b>
+                    <p>@idea.Description</p>
+                    <span style="float: right;color: grey"> @idea.Author.UserName </span>
+                    <p><a href="/Ideas/Details?id=@idea.Id">Открыть</a></p>
+                </li>
+            }
+        </ul>
+        @if (User.Identity.IsAuthenticated)
+        {
+            <a href="/ideas/create" class="btn btn-default btn-sm"><span class="glyphicon glyphicon-plus"></span> Добавить новую идею...</a>
+        }
+
+        @*<br />
+            <a href="/home/messages">Обсудить в чате</a>*@
+    </div>
+
+    <div class="col-md-1">
+    </div>
+    <div class="col-md-5">
+        <h2>Реализованные идеи</h2>
+        <ul class="list-group">
+            <li class="list-group-item">Пока нет реализованых идей</li>
+        </ul>
+    </div>
+</div>
+
+@section Scripts
+{
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $(document).on("click", "#voteUp", function () {
+                if (!$(this).prop("disabled")) {
+                    var element = $(this).parent().find("#ideaValue");
+                    var ideaIdElement = $(this).parent().find("#ideaId");
+                    var ideaId = parseInt(ideaIdElement.val());
+
+                    $.post("/votes/voteup?ideaid="+ideaId, function (data) {
+                        element.text(data);
+                    });
+
+                    $(this).prop("disabled", true);
+                }
+            });
+        });
+    </script>
+}

@@ -1,0 +1,72 @@
+﻿@using System.Threading.Tasks
+@using Alternyx.Models
+@model Alternyx.Models.Idea
+<h2>@Model.Name</h2>
+@Model.Description
+<br /><br />
+<dl>
+    <dt>
+        @Html.DisplayNameFor(model => model.Status)
+    </dt>
+    <dd>
+        @Html.DisplayFor(model => model.Status)
+    </dd>
+    <dt>
+        @Html.DisplayNameFor(model => model.Value)
+    </dt>
+    <dd>
+        @Html.DisplayFor(model => model.Value)
+    </dd>
+</dl>
+
+<hr />
+
+<h2>Комментарии</h2>
+
+@if (User.Identity.IsAuthenticated)
+{
+    <!-- Comments Form -->
+    <div class="well">
+        <h5>Оставить комментарий:</h5>
+        <form asp-action="Details">
+            <input type="hidden" id="ideaId" name="ideaId" value="@Model.Id" />
+            <div class="form-group">
+                <textarea id="commentText" name="commentText" class="form-control" rows="3"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Добавить</button>
+        </form>
+    </div>
+}
+else
+{
+    <div class="alert alert-warning">
+        Только авторизированые пользователи могут оставлять комментарии.
+        <a asp-controller="Account" asp-action="Login">Войти</a>
+    </div>
+}
+
+<hr>
+
+@if (((IEnumerable<Comment>)ViewBag.Comments).Any())
+{
+    <!-- Posted Comments -->
+    foreach (Comment comm in ViewBag.Comments)
+    {
+        <div class="media">
+            <a class="pull-left" href="#">
+                <img class="media-object" src="~/images/default.jpg" width="64" alt="">
+            </a>
+            <div class="media-body">
+                <h4 class="media-heading">
+                    @comm.User.UserName
+                    <small>@(comm.DateTime.ToLongDateString() + " " +comm.DateTime.ToLongTimeString())</small>
+                </h4>
+                @comm.Text
+            </div>
+        </div>
+    }
+}
+else
+{
+    <div>Комментариев нет</div>
+}
