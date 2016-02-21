@@ -20,30 +20,30 @@ namespace Alternyx.Controllers
             var openIdeas = _context.Ideas
                 .Where(_ => _.Status == IdeaStatus.Open)
                 .Include(i => i.Author)
-                .OrderByDescending(_=>_.Value);
+                .OrderByDescending(_ => _.Value);
 
             var userIdStr = User.GetUserId();
             if (userIdStr != null)
             {
                 var userId = int.Parse(userIdStr);
-                var votes = _context.Votes.Where(v => v.UserId == userId).Select(v=>v.IdeaId).ToList();
-                ViewBag.Votes = votes;
+
+                var votesUp = _context.Votes.Where(v => v.UserId == userId && v.Value == 1).Select(v => v.IdeaId).ToList();
+                ViewBag.VotesUp = votesUp;
+
+                var votesDown = _context.Votes.Where(v => v.UserId == userId && v.Value == -1).Select(v => v.IdeaId).ToList();
+                ViewBag.VotesDown = votesDown;
             }
-            
+
             return View(openIdeas.ToList());
         }
 
         public IActionResult About()
         {
-            ViewData["Message"] = "Your application description page.";
-
             return View();
         }
 
         public IActionResult Contact()
         {
-            ViewData["Message"] = "Your contact page.";
-
             return View();
         }
 

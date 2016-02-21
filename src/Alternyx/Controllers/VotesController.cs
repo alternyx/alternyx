@@ -17,11 +17,11 @@ namespace Alternyx.Controllers
         }
 
         // GET: Votes
-        public IActionResult Index(int count = 100)
-        {
-            var votes = _context.Votes.Skip(Math.Max(0, _context.Votes.Count() - count)).Include(v => v.Idea).Include(v => v.User);
-            return View(votes.ToList());
-        }
+        //public IActionResult Index(int count = 100)
+        //{
+        //    var votes = _context.Votes.Skip(Math.Max(0, _context.Votes.Count() - count)).Include(v => v.Idea).Include(v => v.User);
+        //    return View(votes.ToList());
+        //}
 
         public int VoteUp(int ideaId)
         {
@@ -40,10 +40,16 @@ namespace Alternyx.Controllers
             var userId = int.Parse(userIdStr);
 
             var vote = _context.Votes.SingleOrDefault(v => v.UserId == userId && v.IdeaId == ideaId);
+            bool userChangedVote = false;
+            // if this user alrady voted before
             if (vote != null)
             {
-                vote.Value = value;
-                _context.Update(vote);
+                if (vote.Value != value)
+                {
+                    vote.Value += 2*value;
+                    _context.Update(vote);
+                    userChangedVote = true;
+                }
             }
             else
             {
@@ -62,6 +68,11 @@ namespace Alternyx.Controllers
             if (idea != null)
             {
                 idea.Value += value;
+                if (userChangedVote)
+                {
+                    idea.Value += value;
+                }
+
                 _context.Update(idea);
             }
 

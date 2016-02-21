@@ -21,23 +21,30 @@
             @foreach (var idea in Model)
             {
                 <li class="list-group-item">
-                    <div class="badge">
-                        <input type="hidden" id="ideaId" name="ideaId" value="@idea.Id" />
-                        <div id="ideaValue">@idea.Value</div>
-                        @if (User.Identity.IsAuthenticated)
+                    <input type="hidden" id="ideaId" name="ideaId" value="@idea.Id" />
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        var votesUp = new List<int>();
+                        var votesDown = new List<int>();
+                        if (ViewBag.VotesUp != null && ViewBag.VotesDown != null)
                         {
-                            var votes = new List<int>();
-                            if (ViewBag.Votes != null)
-                            {
-                                votes = (List<int>) ViewBag.Votes;
-                            }
-
-                            <a id="voteUp" class="btn btn-xs btn-success" title="поддержать" @((votes.Contains(idea.Id)) ? "disabled='true'" : "")>
+                            votesUp = (List<int>)ViewBag.VotesUp;
+                            votesDown = (List<int>)ViewBag.VotesDown;
+                        }
+                        <div style="float:right">
+                            <a id="voteUp" class="btn btn-xs btn-success" title="поддержать" @((votesUp.Contains(idea.Id)) ? "disabled='true'" : "")>
                                 <span class="glyphicon glyphicon-thumbs-up"></span>
                             </a>
-                        }
-                        @*<a href="#" class="btn btn-xs btn-danger"><span class="glyphicon glyphicon-thumbs-down"></span></a>*@
-                    </div>
+                            <a id="voteDown" class="btn btn-xs btn-danger" title="поддержать" @((votesDown.Contains(idea.Id)) ? "disabled='true'" : "")>
+                            <span class="glyphicon glyphicon-thumbs-down"></span>
+                            </a>
+                        </div>
+                        <div style="float:right">&nbsp;</div>
+                        <div class="badge">
+                            <div id="ideaValue">@idea.Value</div>
+                        </div>
+                    }
+
                     <b>@idea.Name</b>
                     <p>@idea.Description</p>
                     <span style="float: right;color: grey"> @idea.Author.UserName </span>
@@ -70,15 +77,33 @@
         $(document).ready(function () {
             $(document).on("click", "#voteUp", function () {
                 if (!$(this).prop("disabled")) {
-                    var element = $(this).parent().find("#ideaValue");
-                    var ideaIdElement = $(this).parent().find("#ideaId");
+                    var element = $(this).parent().parent().find("#ideaValue");
+                    var ideaIdElement = $(this).parent().parent().find("#ideaId");
                     var ideaId = parseInt(ideaIdElement.val());
 
-                    $.post("/votes/voteup?ideaid="+ideaId, function (data) {
+                    $.post("/votes/voteup?ideaid=" + ideaId, function (data) {
                         element.text(data);
                     });
 
                     $(this).prop("disabled", true);
+                    var another = $(this).parent().find("#voteDown");
+                    another.removeAttr("disabled");
+                }
+            });
+
+            $(document).on("click", "#voteDown", function () {
+                if (!$(this).prop("disabled")) {
+                    var element = $(this).parent().parent().find("#ideaValue");
+                    var ideaIdElement = $(this).parent().parent().find("#ideaId");
+                    var ideaId = parseInt(ideaIdElement.val());
+
+                    $.post("/votes/votedown?ideaid=" + ideaId, function (data) {
+                        element.text(data);
+                    });
+
+                    $(this).prop("disabled", true);
+                    var another = $(this).parent().find("#voteUp");
+                    another.removeAttr("disabled");
                 }
             });
         });
